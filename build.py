@@ -21,16 +21,33 @@ versions = {
             "zlib",
             "bzip2",
             "libcap",
-            "mariadb",
+            "mariadb-client-libs",
             "postgresql",
             "expat",
-            "sqlite",
+            "sqlite-libs",
             "krb5",
             "openldap",
             "clucene",
             "lz4",
             "xz",
             "icu",
+        ],
+        "bdeps": [
+            "curl-dev",
+            "libressl-dev",
+            "zlib-dev",
+            "bzip2-dev",
+            "libcap-dev",
+            "mariadb-dev",
+            "postgresql-dev",
+            "expat-dev",
+            "sqlite-dev",
+            "krb5-dev",
+            "openldap-dev",
+            "clucene-dev",
+            "lz4-dev",
+            "xz-dev",
+            "icu-dev",
         ],
         "dovecot_config": [
             "--disable-rpath",
@@ -57,6 +74,7 @@ versions = {
         "latest": True,
         "sieve": "0.5.1",
         "deps": "2.2.35",
+        "bdeps": "2.2.35",
         "dovecot_config": "2.2.35",
         "sieve_config": "2.2.35"
     }
@@ -87,7 +105,7 @@ def build_tags(ver, latest):
     ))
     return tags
 
-def build_args(dovecot_ver, sieve_ver, dovecot_cfg, sieve_cfg, deps, makeopts="-j1", cflags="-O2", cppflags="-O2"):
+def build_args(dovecot_ver, sieve_ver, dovecot_cfg, sieve_cfg, deps, bdeps, makeopts="-j1", cflags="-O2", cppflags="-O2"):
     return [
         "--build-arg", "DOVECOT_MAJOR={}".format(dovecot_ver[0]),
         "--build-arg", "DOVECOT_MINOR={}".format(dovecot_ver[1]),
@@ -95,8 +113,8 @@ def build_args(dovecot_ver, sieve_ver, dovecot_cfg, sieve_cfg, deps, makeopts="-
         "--build-arg", "SIEVE_MAJOR={}".format(sieve_ver[0]),
         "--build-arg", "SIEVE_MINOR={}".format(sieve_ver[1]),
         "--build-arg", "SIEVE_PATCH={}".format(sieve_ver[2]),
-        "--build-arg", "DOVECOT_DEPS={}".format(" ".join(deps)),
-        "--build-arg", "BUILD_DEPS={}".format(" ".join("{}-dev".format(d) for d in deps)),
+        "--build-arg", "DOVECOT_DEPS={}".format(deps),
+        "--build-arg", "BUILD_DEPS={}".format(bdeps),
         "--build-arg", "DOVECOT_CONFIG={}".format(" ".join(dovecot_cfg)),
         "--build-arg", "SIEVE_CONFIG={}".format(" ".join(sieve_cfg)),
         "--build-arg", "MAKEOPTS={}".format(makeopts),
@@ -119,7 +137,8 @@ def docker_build(ver):
                             versions[ver]["sieve"].split("."),
                             dovecot_config,
                             sieve_config,
-                            get_config(ver, "deps"),
+                            " ".join(get_config(ver, "deps")),
+                            " ".join(get_config(ver, "bdeps")),
                             makeopts=makeopts,
                             cflags=cflags,
                             cppflags=cppflags)
