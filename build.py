@@ -4,6 +4,7 @@ import os
 import os.path
 import argparse
 from threading import Thread, Lock
+from sys import exit
 
 DEBUG = False
 LOGDIR = "logs"
@@ -174,7 +175,6 @@ if __name__ == "__main__":
     LOGDIR = args.logdir
 
     if args.version == "all":
-        
         threads = []
         for ver in versions:
             t = Thread(target=docker_build, args=(ver,))
@@ -182,5 +182,11 @@ if __name__ == "__main__":
             threads.append(t)
         for t in threads:
             t.join()
+    elif args.version == "latest":
+        for ver in versions:
+            if versions[ver]["latest"]:
+                docker_build(ver)
+                exit(0)
+        raise Exception('No "latest" version specified!')
     else:
         docker_build(args.version)
