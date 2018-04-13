@@ -61,3 +61,11 @@ Note that **/path/to/config** is a directory.
   * Here you can mount extra programs which you can then use in your configuration for sieve-pipe.
 * /sieve-filter
   * Here you can mount extra programs which you can then use in your configuration for sieve-filter.
+
+## Update instructions
+
+1. Add new dovecot version to `build.py`
+2. `make VERSION="<VERSION>"`
+    1. Omit `VERSION=` or set `<VERSION>` to **latest** if you are building a latest version.
+3. `make push`
+4. Commit your changes and push them
