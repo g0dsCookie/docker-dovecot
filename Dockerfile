@@ -47,7 +47,7 @@ RUN set -eu \
     && wget -qO - "https://pigeonhole.dovecot.org/releases/${DOVECOT_MAJOR}.${DOVECOT_MINOR}/dovecot-${DOVECOT_MAJOR}.${DOVECOT_MINOR}-pigeonhole-${SIEVE_MAJOR}.${SIEVE_MINOR}.${SIEVE_PATCH}.tar.gz" \
         | tar -xzf - \
     && cd "dovecot-${DOVECOT_MAJOR}.${DOVECOT_MINOR}.${DOVECOT_PATCH}" \
-    && ./configure --prefix="/" --with-statedir="/var/lib/dovecot" --with-rundir="/run/dovecot" --with-moduledir="/usr/libexec/dovecot" \
+    && ./configure --prefix="/" --with-statedir="/var/lib/dovecot" --with-rundir="/run/dovecot" --with-moduledir="/usr/lib/dovecot" \
         ${DOVECOT_CONFIG} CFLAGS="${CFLAGS}" CPPFLAGS="${CPPFLAGS}" \
     && make ${MAKEOPTS} \
     && make install \
