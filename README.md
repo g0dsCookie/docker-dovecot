@@ -45,7 +45,7 @@ Now build your container with `$ docker build -t my-dovecot .`.
 
 ### Use bind mounts
 
-`$ docker run -d --name my-dovecot -v /path/to/config:/etc/dovecot:ro g0dscookie/dovecot:2.3`
+`$ docker run -d --name my-dovecot -v /path/to/config:/conf:ro -v /my/certificates:/certificates:ro -v /path/to/data:/data g0dscookie/dovecot`
 
 Note that **/path/to/config** is a directory.
 
@@ -53,9 +53,9 @@ Note that **/path/to/config** is a directory.
 
 * /data
   * Here you can store your mails
-* /certs
+* /certificates
   * Here you can mount your certificates used by dovecot.
-* /etc/dovecot
+* /conf
   * Dovecot configuration files.
 * /sieve-pipe
   * Here you can mount extra programs which you can then use in your configuration for sieve-pipe.
