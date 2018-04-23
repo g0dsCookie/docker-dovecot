@@ -83,7 +83,7 @@ def docker_build(ver, jumbo=False):
                        cppflags=cppflags,
                        jumbo=jumbo)
 
-    if not os.path.isdir(LOGDIR):
+    if LOGDIR != "stdout" and not os.path.isdir(LOGDIR):
         os.mkdir(LOGDIR)
 
     if DEBUG:
