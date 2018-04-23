@@ -1,5 +1,7 @@
 FROM alpine:3.7
 
+COPY content/ /
+
 RUN apk add --no-cache --virtual .dovecot-deps \
         curl \
         libressl \
@@ -94,4 +96,4 @@ EXPOSE 110 143 993 995 4190
 
 VOLUME [ "/data", "/certificates", "/conf", "/sieve-pipe", "/sieve-filter" ]
 
-ENTRYPOINT [ "/usr/sbin/dovecot", "-c", "/conf/dovecot.conf", "-F" ]
+ENTRYPOINT [ "/docker-entrypoint.sh", "/usr/sbin/dovecot", "-c", "/conf/dovecot.conf", "-F" ]

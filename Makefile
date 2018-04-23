@@ -10,11 +10,11 @@ TAG				= $(USERNAME)/$(SERVICE)
 
 .PHONY: build
 build:
-	MAKEOPTS="$(MOPTS)" CFLAGS="$(CFLAGS)" CPPFLAGS="$(CPPFLAGS)" ./build.py --debug --version $(VERSION)
+	MAKEOPTS="$(MOPTS)" CFLAGS="$(CFLAGS)" CPPFLAGS="$(CPPFLAGS)" ./build.py --debug --stdout --version $(VERSION)
 
 .PHONE: build-all
 build-all:
-	MAKEOPTS="$(MOPTS)" CFLAGS="$(CFLAGS)" CPPFLAGS="$(CPPFLAGS)" ./build.py --debug --version all
+	MAKEOPTS="$(MOPTS)" CFLAGS="$(CFLAGS)" CPPFLAGS="$(CPPFLAGS)" ./build.py --debug --stdout --version all
 
 .PHONY: push
 push:
