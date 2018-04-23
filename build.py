@@ -5,6 +5,7 @@ import os.path
 import argparse
 from threading import Thread, Lock
 from sys import exit
+import sys
 
 DEBUG = False
 LOGDIR = "logs"
@@ -16,68 +17,10 @@ versions = {
     "2.2.35": {
         "latest": False,
         "sieve": "0.4.23",
-        "deps": [
-            "curl",
-            "libressl",
-            "zlib",
-            "bzip2",
-            "libcap",
-            "mariadb-client-libs",
-            "postgresql",
-            "expat",
-            "sqlite-libs",
-            "krb5",
-            "openldap",
-            "clucene",
-            "lz4",
-            "xz",
-            "icu",
-        ],
-        "bdeps": [
-            "curl-dev",
-            "libressl-dev",
-            "zlib-dev",
-            "bzip2-dev",
-            "libcap-dev",
-            "mariadb-dev",
-            "postgresql-dev",
-            "expat-dev",
-            "sqlite-dev",
-            "krb5-dev",
-            "openldap-dev",
-            "clucene-dev",
-            "lz4-dev",
-            "xz-dev",
-            "icu-dev",
-        ],
-        "dovecot_config": [
-            "--disable-rpath",
-            "--with-bzlib",
-            "--with-libcap",
-            "--with-gssapi",
-            "--with-ldap",
-            "--with-sql",
-            "--with-mysql",
-            "--with-pgsql",
-            "--with-sqlite",
-            "--with-solr",
-            "--with-ssl=openssl",
-            "--with-zlib",
-            "--without-stemmer",
-            "--with-lucene",
-            "--with-icu",
-            "--with-lz4",
-            "--with-lzma",
-        ],
-        "sieve_config": []
     },
     "2.3.1": {
         "latest": True,
         "sieve": "0.5.1",
-        "deps": "2.2.35",
-        "bdeps": "2.2.35",
-        "dovecot_config": "2.2.35",
-        "sieve_config": "2.2.35"
     }
 }
 
@@ -95,7 +38,13 @@ def get_config(ver, cfg):
     else:
         return tmp
 
-def build_tags(ver, latest):
+def build_tags(ver, latest, jumbo=False):
+    if jumbo:
+        return [
+            "-t", "{}:{}-jumbo".format(tag, ver[0]),
+            "-t", "{}:{}.{}-jumbo".format(tag, ver[0], ver[1]),
+            "-t", "{}:{}.{}.{}-jumbo".format(tag, ver[0], ver[1], ver[2]),
+        ]
     tags = []
     if latest:
         tags.extend(("-t", "{}:latest".format(tag)))
@@ -106,82 +55,90 @@ def build_tags(ver, latest):
     ))
     return tags
 
-def build_args(dovecot_ver, sieve_ver, dovecot_cfg, sieve_cfg, deps, bdeps, makeopts="-j1", cflags="-O2", cppflags="-O2"):
+def build_args(dovecot_ver, sieve_ver, jumbo=False, makeopts="-j1", cflags="-O2", cppflags="-O2"):
     return [
         "--build-arg", "DOVECOT_MAJOR={}".format(dovecot_ver[0]),
         "--build-arg", "DOVECOT_MINOR={}".format(dovecot_ver[1]),
         "--build-arg", "DOVECOT_PATCH={}".format(dovecot_ver[2]),
-        "--build-arg", "SIEVE_MAJOR={}".format(sieve_ver[0]),
-        "--build-arg", "SIEVE_MINOR={}".format(sieve_ver[1]),
-        "--build-arg", "SIEVE_PATCH={}".format(sieve_ver[2]),
-        "--build-arg", "DOVECOT_DEPS={}".format(deps),
-        "--build-arg", "BUILD_DEPS={}".format(bdeps),
-        "--build-arg", "DOVECOT_CONFIG={}".format(" ".join(dovecot_cfg)),
-        "--build-arg", "SIEVE_CONFIG={}".format(" ".join(sieve_cfg)),
+        "--build-arg", "SIEVE_VERSION={}".format(sieve_ver),
+        "--build-arg", "JUMBO={}".format(str(jumbo)),
         "--build-arg", "MAKEOPTS={}".format(makeopts),
         "--build-arg", "CFLAGS={}".format(cflags),
         "--build-arg", "CPPFLAGS={}".format(cppflags),
     ]
 
-def docker_build(ver):
+def docker_build(ver, jumbo=False):
     PRINT_LOCK.acquire()
     print("Building {}-{}...".format(tag, ver))
-    dovecot_config = get_config(ver, "dovecot_config")
-    sieve_config = get_config(ver, "sieve_config")
 
     makeopts = os.getenv("MAKEOPTS", "-j1")
     cflags = os.getenv("CFLAGS", "-O2")
     cppflags = os.getenv("CPPFLAGS", "-O2")
 
-    tags = build_tags(ver.split("."), versions[ver]["latest"])
+    tags = build_tags(ver.split("."), versions[ver]["latest"], jumbo=jumbo)
     bargs = build_args(ver.split("."),
-                            versions[ver]["sieve"].split("."),
-                            dovecot_config,
-                            sieve_config,
-                            " ".join(get_config(ver, "deps")),
-                            " ".join(get_config(ver, "bdeps")),
-                            makeopts=makeopts,
-                            cflags=cflags,
-                            cppflags=cppflags)
+                       versions[ver]["sieve"],
+                       makeopts=makeopts,
+                       cflags=cflags,
+                       cppflags=cppflags,
+                       jumbo=jumbo)
 
     if not os.path.isdir(LOGDIR):
         os.mkdir(LOGDIR)
 
     if DEBUG:
-        print("DEPS:            {}".format(" ".join(get_config(ver, "deps"))))
-        print("BUILD DEPS:      {}".format(" ".join("{}-dev".format(d) for d in get_config(ver, "deps"))))
-        print("DOVECOT_CONFIG:  {}".format(dovecot_config))
-        print("SIEVE_CONFIG:    {}".format(sieve_config))
+        print("JUMBO:           {}".format(str(jumbo)))
         print("MAKEOPTS:        {}".format(makeopts))
         print("CFLAGS:          {}".format(cflags))
         print("CPPFLAGS:        {}".format(cppflags))
         print("")
     PRINT_LOCK.release()
 
-    stdout = open(os.path.join(LOGDIR, "dovecot-" + ver + ".log"), mode="w")
-    stderr = open(os.path.join(LOGDIR, "dovecot-" + ver + ".err"), mode="w")
-    subprocess.call(["docker", "build"] + tags + bargs + ["."], stdout=stdout, stderr=stderr)
-    stdout.close()
-    stderr.close()
+    if LOGDIR == "stdout":
+        stdout = sys.stdout
+        stderr = sys.stderr
+    else:
+        stdout = open(os.path.join(LOGDIR, "dovecot-" + ver + ".log"), mode="w")
+        stderr = open(os.path.join(LOGDIR, "dovecot-" + ver + ".err"), mode="w")
+    
+    ret = subprocess.call(["docker", "build"] + tags + bargs + ["."], stdout=stdout, stderr=stderr)
+    
+    if LOGDIR != "stdout":
+        stdout.close()
+        stderr.close()
+    
+    if ret != 0:
+        print("{} returned non-zero exit code: {}".format(" ".join(["docker", "build"] + tags + bargs + ["."]), ret))
+        exit(ret)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="{} build script".format(tag))
-    parser.add_argument("--version", default="all", type=str, help="Set the version to build (Defaults to %(default)s")
+    parser.add_argument("--version", default="all", type=str, help="Set the version to build (Defaults to %(default)s)")
     parser.add_argument("-d", "--debug", action='store_true', help="Enable debug output.")
-    parser.add_argument("-l", "--logdir", metavar="LOGDIR", default="logs", type=str, help="Set the log directory (Defaults to %(default)s")
+    parser.add_argument("-l", "--logdir", metavar="LOGDIR", default="logs", type=str, help="Set the log directory (Defaults to %(default)s)")
+    parser.add_argument("--stdout", action='store_true', help="Print log to stdout.")
 
     args = parser.parse_args()
     DEBUG = args.debug
     LOGDIR = args.logdir
+    if args.stdout:
+        LOGDIR = "stdout"
 
     if args.version == "all":
-        threads = []
-        for ver in versions:
-            t = Thread(target=docker_build, args=(ver,))
-            t.start()
-            threads.append(t)
-        for t in threads:
-            t.join()
+        if args.stdout:
+            for ver in versions:
+                docker_build(ver)
+                docker_build(ver, jumbo=True)
+        else:
+            threads = []
+            for ver in versions:
+                t = Thread(target=docker_build, args=(ver,))
+                t1 = Thread(target=docker_build, args=(ver,True,))
+                t.start()
+                t1.start()
+                threads.extend([t, t1])
+            for t in threads:
+                t.join()
     elif args.version == "latest":
         for ver in versions:
             if versions[ver]["latest"]:
