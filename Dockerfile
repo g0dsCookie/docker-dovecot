@@ -66,4 +66,4 @@ EXPOSE 110 143 993 995 4190
 
 VOLUME [ "/data", "/certificates", "/conf", "/sieve-pipe", "/sieve-filter" ]
 
-ENTRYPOINT [ "/sbin/dovecot", "-c", "/conf/dovecot.conf", "-F" ]
+ENTRYPOINT [ "/usr/sbin/dovecot", "-c", "/conf/dovecot.conf", "-F" ]
