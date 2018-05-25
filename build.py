@@ -18,6 +18,10 @@ versions = {
         "latest": False,
         "sieve": "0.4.23",
     },
+    "2.2.36": {
+        "latest": False,
+        "sieve": "0.4.24",
+    },
     "2.3.1": {
         "latest": True,
         "sieve": "0.5.1",
