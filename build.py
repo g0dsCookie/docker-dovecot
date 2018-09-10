@@ -23,8 +23,16 @@ versions = {
         "sieve": "0.4.24",
     },
     "2.3.1": {
-        "latest": True,
+        "latest": False,
         "sieve": "0.5.1",
+    },
+    "2.3.2": {
+        "latest": False,
+        "sieve": "0.5.2",
+    },
+    "2.3.2.1": {
+        "latest": True,
+        "sieve": "0.5.2",
     }
 }
 
