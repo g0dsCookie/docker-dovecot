@@ -1,20 +1,41 @@
-MOPTS			?= -j1
-CFLAGS			?= -O2
-CPPFLAGS		?= -O2
+MAJOR			?=
+MINOR			?=
+PATCH			?=
+MAINT			?=
+SIEVE_VERSION	?=
 
-VERSION			?= latest
+TAG	= g0dscookie/dovecot
+TAGLIST = -t ${TAG}:${MAJOR} -t ${TAG}:${MAJOR}.${MINOR} -t ${TAG}:${MAJOR}.${MINOR}.${PATCH}
+BUILDARGS = --build-arg DOVECOT_MAJOR=${MAJOR} --build-arg DOVECOT_MINOR=${MINOR} --build-arg DOVECOT_PATCH=${PATCH} --build-arg SIEVE_VERSION=${SIEVE_VERSION}
 
-USERNAME		?= g0dscookie
-SERVICE			?= dovecot
-TAG				= $(USERNAME)/$(SERVICE)
+ifneq (${MAINT},)
+MAINTENANCE := .${MAINT}
+TAGLIST += -t ${TAG}:${MAJOR}.${MINOR}.${PATCH}${MAINTENANCE}
+BUILDARGS += --build-arg DOVECOT_MAINTENANCE=${MAINTENANCE}
+endif
 
-.PHONY: build
-build:
-	MAKEOPTS="$(MOPTS)" CFLAGS="$(CFLAGS)" CPPFLAGS="$(CPPFLAGS)" ./build.py --debug --stdout --version $(VERSION)
+.PHONY: nothing
+nothing:
+	@echo "No job given."
+	@exit 1
 
-.PHONE: build-all
-build-all:
-	MAKEOPTS="$(MOPTS)" CFLAGS="$(CFLAGS)" CPPFLAGS="$(CPPFLAGS)" ./build.py --debug --stdout --version all
+.PHONY: all
+all: alpine3.9-slim
+
+.PHONY: all-latest
+all-latest: alpine3.9-slim-latest
+
+.PHONY: alpine3.9-slim
+alpine3.9-slim:
+	docker build ${BUILDARGS} ${TAGLIST} alpine3.9-slim
+
+.PHONY: alpine3.9-slim-latest
+alpine3.9-slim-latest:
+	docker build ${BUILDARGS} -t ${TAG}:latest ${TAGLIST} alpine3.9-slim
+
+.PHONY: clean
+clean:
+	docker rmi -f $(shell docker images -aq ${TAG})
 
 .PHONY: push
 push:
