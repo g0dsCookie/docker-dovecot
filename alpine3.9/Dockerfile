@@ -17,13 +17,13 @@ RUN set -eu \
  && apk add --no-cache --virtual .dovecot-deps \
        curl openssl zlib bzip2 libcap mariadb-connector-c \
        postgresql expat sqlite-libs krb5 openldap clucene \
-       lz4 xz icu rspamd-client \
+       lz4 xz icu libsodium rspamd-client \
  && apk add --no-cache --virtual .dovecot-bdeps \
        gcc g++ libc-dev rpcgen make tar gzip \
        linux-headers curl-dev openssl-dev zlib-dev \
        bzip2-dev libcap-dev mariadb-connector-c-dev postgresql-dev \
        expat-dev sqlite-dev krb5-dev openldap-dev \
-       clucene-dev lz4-dev xz-dev icu-dev \
+       clucene-dev lz4-dev xz-dev icu-dev libsodium-dev \
  && MAKEOPTS="-j$(nproc)" \
  && BDIR="$(mktemp -d)" && cd "${BDIR}" \
  && DOVECOT_VERSION="${DOVECOT_MAJOR}.${DOVECOT_MINOR}.${DOVECOT_PATCH}${DOVECOT_MAINTENANCE}" \
@@ -34,7 +34,7 @@ RUN set -eu \
        --with-statedir="/var/lib/dovecot" --with-rundir="/run/dovecot" --with-moduledir="/usr/lib/dovecot" \
        --disable-rpath --with-bzlib --with-libcap --with-gssapi --with-ldap --with-sql --with-mysql \
        --with-pgsql --with-sqlite --with-solr --with-ssl=openssl --with-zlib --without-stemmer \
-       --with-lucene --with-icu --with-lz4 --with-lzma \
+       --with-lucene --with-icu --with-lz4 --with-lzma --with-sodium \
  && make ${MAKEOPTS} && make install && cd .. \
  && cecho "##### INSTALLING DOVECOT SIEVE ${SIEVE_VERSION} #####" \
  && curl -sSL -o "dovecot-${DOVECOT_MAJOR}.${DOVECOT_MINOR}-pigeonhole-${SIEVE_VERSION}.tar.gz" "https://pigeonhole.dovecot.org/releases/${DOVECOT_MAJOR}.${DOVECOT_MINOR}/dovecot-${DOVECOT_MAJOR}.${DOVECOT_MINOR}-pigeonhole-${SIEVE_VERSION}.tar.gz" \

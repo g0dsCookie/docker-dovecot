@@ -20,18 +20,18 @@ nothing:
 	@exit 1
 
 .PHONY: all
-all: alpine3.9-slim
+all: alpine3.9
 
 .PHONY: all-latest
-all-latest: alpine3.9-slim-latest
+all-latest: alpine3.9-latest
 
-.PHONY: alpine3.9-slim
-alpine3.9-slim:
-	docker build ${BUILDARGS} ${TAGLIST} alpine3.9-slim
+.PHONY: alpine3.9
+alpine3.9:
+	docker build ${BUILDARGS} ${TAGLIST} alpine3.9
 
-.PHONY: alpine3.9-slim-latest
-alpine3.9-slim-latest:
-	docker build ${BUILDARGS} -t ${TAG}:latest ${TAGLIST} alpine3.9-slim
+.PHONY: alpine3.9-latest
+alpine3.9-latest:
+	docker build ${BUILDARGS} -t ${TAG}:latest ${TAGLIST} alpine3.9
 
 .PHONY: clean
 clean:
