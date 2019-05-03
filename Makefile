@@ -26,11 +26,11 @@ all: alpine3.9
 all-latest: alpine3.9-latest
 
 .PHONY: alpine3.9
-alpine3.9:
+alpine3.9: pull
 	docker build ${BUILDARGS} ${TAGLIST} alpine3.9
 
 .PHONY: alpine3.9-latest
-alpine3.9-latest:
+alpine3.9-latest: pull
 	docker build ${BUILDARGS} -t ${TAG}:latest ${TAGLIST} alpine3.9
 
 .PHONY: clean
@@ -40,3 +40,8 @@ clean:
 .PHONY: push
 push:
 	docker push $(TAG)
+
+.PHONY: pull
+pull:
+	docker pull ${TAG}:latest
+
