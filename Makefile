@@ -1,8 +1,8 @@
-MAJOR			?=
-MINOR			?=
-PATCH			?=
+MAJOR			?= 2
+MINOR			?= 3
+PATCH			?= 7
 MAINT			?=
-SIEVE_VERSION	?=
+SIEVE_VERSION		?= 0.5.7
 
 TAG	= g0dscookie/dovecot
 TAGLIST = -t ${TAG}:${MAJOR} -t ${TAG}:${MAJOR}.${MINOR} -t ${TAG}:${MAJOR}.${MINOR}.${PATCH}
