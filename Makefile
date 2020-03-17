@@ -1,47 +1,41 @@
-MAJOR			?= 2
-MINOR			?= 3
-PATCH			?= 7
-MAINT			?=
-SIEVE_VERSION		?= 0.5.7
+MAJOR	?= 2
+MINOR	?= 3
+PATCH	?= 10
+MAINT	?=
+SIEVE	?= 0.5.10
 
-TAG	= g0dscookie/dovecot
-TAGLIST = -t ${TAG}:${MAJOR} -t ${TAG}:${MAJOR}.${MINOR} -t ${TAG}:${MAJOR}.${MINOR}.${PATCH}
-BUILDARGS = --build-arg DOVECOT_MAJOR=${MAJOR} --build-arg DOVECOT_MINOR=${MINOR} --build-arg DOVECOT_PATCH=${PATCH} --build-arg SIEVE_VERSION=${SIEVE_VERSION}
+TAG		= g0dscookie/dovecot
+TAGLIST		= -t ${TAG}:${MAJOR} -t ${TAG}:${MAJOR}.${MINOR} -t ${TAG}:${MAJOR}.${MINOR}.${PATCH}
+BUILDARGS	= --build-arg MAJOR=${MAJOR} --build-arg MINOR=${MINOR} --build-arg PATCH=${PATCH} --build-arg SIEVE=${SIEVE}
 
 ifneq (${MAINT},)
-MAINTENANCE := .${MAINT}
-TAGLIST += -t ${TAG}:${MAJOR}.${MINOR}.${PATCH}${MAINTENANCE}
-BUILDARGS += --build-arg DOVECOT_MAINTENANCE=${MAINTENANCE}
+MAINTENANCE	:= .${MAINT}
+TAGLIST		+= -t ${TAG}:${MAJOR}.${MINOR}.${PATCH}${MAINTENANCE}
+BUILDARGS	+= --build-arg MAINTENANCE=${MAINTENANCE}
 endif
 
-.PHONY: nothing
-nothing:
-	@echo "No job given."
-	@exit 1
+PLATFORM_FLAGS	= --platform linux/amd64 --platform linux/arm64 --platform linux/arm/v6
+PUSH		?= --push
 
-.PHONY: all
-all: alpine3.9
+build:
+	docker buildx build ${PUSH} ${PLATFORM_FLAGS} ${BUILDARGS} ${TAGLIST} .
 
-.PHONY: all-latest
-all-latest: alpine3.9-latest
+latest: TAGLIST := -t ${TAG}:latest ${TAGLIST}
+latest: build
 
-.PHONY: alpine3.9
-alpine3.9: pull
-	docker build ${BUILDARGS} ${TAGLIST} alpine3.9
+amd64: PLATFORM_FLAGS := --platform linux/amd64
+amd64: build
+amd64-latest: TAGLIST := -t ${TAG}:latest ${TAGLIST}
+amd64-latest: amd64
 
-.PHONY: alpine3.9-latest
-alpine3.9-latest: pull
-	docker build ${BUILDARGS} -t ${TAG}:latest ${TAGLIST} alpine3.9
+arm64: PLATFORM_FLAGS := --platform linux/arm64
+arm64: build
+arm64-latest: TAGLIST := -t ${TAG}:latest ${TAGLIST}
+arm64-latest: arm64
 
-.PHONY: clean
-clean:
-	docker rmi -f $(shell docker images -aq ${TAG})
+arm: PLATFORM_FLAGS := --platform linux/arm
+arm: build
+arm-latest: TAGLIST := -t ${TAG}:latest ${TAGLIST}
+arm-latest: arm
 
-.PHONY: push
-push:
-	docker push $(TAG)
-
-.PHONY: pull
-pull:
-	docker pull ${TAG}:latest
-
+.PHONY: build latest amd64 amd64-latest arm arm-latest arm64 arm64-latest
