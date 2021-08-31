@@ -1,54 +1,40 @@
 MAJOR	?= 2
 MINOR	?= 3
-PATCH	?= 10
-MAINT	?= 1
-SIEVE	?= 0.5.10
+PATCH	?= 16
+MAINT	?=
+SIEVE	?= 0.5.16
+PLATFORM_FLAGS	?= --platform linux/amd64 --platform linux/arm64
+PUSH    ?= --push
 
-TAG	= g0dscookie/dovecot
-TAGLIST = -t ${TAG}:${MAJOR} -t ${TAG}:${MAJOR}.${MINOR} -t ${TAG}:${MAJOR}.${MINOR}.${PATCH}
-BUILDARGS = --build-arg MAJOR=${MAJOR} --build-arg MINOR=${MINOR} --build-arg PATCH=${PATCH} --build-arg SIEVE=${SIEVE}
+export
 
-ifneq (${MAINT},)
-	MAINTENANCE := .${MAINT}
-	TAGLIST += -t ${TAG}:${MAJOR}.${MINOR}.${PATCH}${MAINTENANCE}
-	BUILDARGS += --build-arg MAINTENANCE=${MAINTENANCE}
-endif
+build-base:
+	$(MAKE) -C base build
+latest-base:
+	$(MAKE) -C base latest
+amd64-base: PLATFORM_FLAGS := --platform linux/amd64
+amd64-base: build-base
+amd64-latest-base: PLATFORM_FLAGS := --platform linux/amd64
+amd64-latest-base: latest-base
+arm64-base: PLATFORM_FLAGS := --platform linux/arm64
+arm64-base: build-base
+arm64-latest-base: PLATFORM_FLAGS := --platform linux/arm64
+arm64-latest-base: latest-base
 
-PLATFORM_FLAGS	= --platform linux/amd64 --platform linux/386 --platform linux/arm64 --platform linux/arm/v6 --platform linux/arm/v7
+build-bloat:
+	$(MAKE) -C bloat build
+latest-bloat:
+	$(MAKE) -C bloat latest
+amd64-bloat: PLATFORM_FLAGS := --platform linux/amd64
+amd64-bloat: build-bloat
+amd64-latest-bloat: PLATFORM_FLAGS := --platform linux/amd64
+amd64-latest-bloat: latest-bloat
+arm64-bloat: PLATFORM_FLAGS := --platform linux/arm64
+arm64-bloat: build-bloat
+arm64-latest-bloat: PLATFORM_FLAGS := --platform linux/arm64
+arm64-latest-bloat: latest-bloat
 
-build:
-	docker buildx build --push ${PLATFORM_FLAGS} ${BUILDARGS} ${TAGLIST} .
-
-latest: TAGLIST := -t ${TAG}:latest ${TAGLIST}
-latest: build
-.PHONY: build latest
-
-amd64: PLATFORM_FLAGS := --platform linux/amd64
-amd64: build
-amd64-latest: TAGLIST := -t ${TAG}:latest ${TAGLIST}
-amd64-latest: amd64
-.PHONY: amd64 amd64-latest
-
-i386: PLATFORM_FLAGS := --platform linux/386
-i386: build
-i386-latest: TAGLIST := -t ${TAG}:latest ${TAGLIST}
-i386-latest: i386
-.PHONY: i386 i386-latest
-
-arm64: PLATFORM_FLAGS := --platform linux/arm64
-arm64: build
-arm64-latest: TAGLIST := -t ${TAG}:latest ${TAGLIST}
-arm64-latest: arm64
-.PHONY: arm64 arm64-latest
-
-armv6: PLATFORM_FLAGS := --platform linux/arm/v6
-armv6: build
-armv6-latest: TAGLIST := -t ${TAG}:latest ${TAGLIST}
-armv6-latest: armv6
-.PHONY: armv6 armv6-latest
-
-armv7: PLATFORM_FLAGS := --platform linux/arm/v7
-armv7: build
-armv7-latest: TAGLIST := -t ${TAG}:latest ${TAGLIST}
-armv7-latest: armv7
-.PHONY: armv7 armv7-latest
+amd64: amd64-base amd64-bloat
+amd64-latest: amd64-latest-base amd64-latest-bloat
+arm64: arm64-base arm64-bloat
+arm64-latest: arm64-latest-base arm64-latest-bloat
