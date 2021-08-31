@@ -8,6 +8,8 @@ PUSH    ?= --push
 
 export
 
+latest: latest-base latest-bloat
+
 build-base:
 	$(MAKE) -C base build
 latest-base:
