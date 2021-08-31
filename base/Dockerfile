@@ -29,7 +29,7 @@ RUN set -eu \
         libsqlite3-dev libkrb5-dev libldap2-dev liblz4-dev \
         libclucene-dev liblzma-dev libicu-dev libsodium-dev \
  && apt-get install -qqy \
-        libcurl4 zlib1g libbz2-1.0 libmariadb3 libpq5 libexpat1 \
+        libcurl4 zlib1g libbz2-1.0 libmariadb3 libpq5 libexpat1 libcap2 \
         libsqlite3-0 libkrb5-3 libldap-2.4-2 liblz4-1 libclucene-core1v5 \
         liblzma5 libicu67 libsodium23 libstemmer0d \
  && cecho "### DOWNLOADING DOVECOT ###" \
