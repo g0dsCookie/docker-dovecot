@@ -1,4 +1,4 @@
-FROM debian:10
+FROM debian:11
 
 ARG MAJOR
 ARG MINOR
@@ -24,14 +24,14 @@ RUN set -eu \
  && apt-get install -qqy \
         build-essential curl gnupg pkg-config \
         libssl-dev libcurl4-openssl-dev zlib1g-dev libbz2-dev \
-        libcap-dev libmariadbclient-dev libmariadb-dev-compat \
+        libcap-dev libmariadb-dev libmariadb-dev-compat \
         libpq-dev libexpat1-dev libstemmer-dev \
         libsqlite3-dev libkrb5-dev libldap2-dev liblz4-dev \
         libclucene-dev liblzma-dev libicu-dev libsodium-dev \
  && apt-get install -qqy \
         libcurl4 zlib1g libbz2-1.0 libmariadb3 libpq5 libexpat1 \
         libsqlite3-0 libkrb5-3 libldap-2.4-2 liblz4-1 libclucene-core1v5 \
-        liblzma5 libicu63 libsodium23 libstemmer0d \
+        liblzma5 libicu67 libsodium23 libstemmer0d \
  && cecho "### DOWNLOADING DOVECOT ###" \
  && cd "${TMP}" \
  && curl -sSL --output "dovecot-${PV}.tar.gz" "https://dovecot.org/releases/${MAJOR}.${MINOR}/dovecot-${PV}.tar.gz" \
