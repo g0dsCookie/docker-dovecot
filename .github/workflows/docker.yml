@@ -91,7 +91,9 @@ jobs:
         with:
           context: base/
           platforms: linux/amd64,linux/arm64
-          build-args: DOVECOT_VERSION=${{ env.DOVECOT_VERSION }}
+          build-args: |
+            DOVECOT_VERSION=${{ env.DOVECOT_VERSION }}
+            SIEVE_VERSION=${{ env.SIEVE_VERSION }}
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
