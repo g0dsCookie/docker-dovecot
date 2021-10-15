@@ -1,20 +1,21 @@
-FROM debian:11
+ARG DEBIAN_VERSION=11
+FROM debian:${DEBIAN_VERSION}
 
-ARG MAJOR
-ARG MINOR
-ARG PATCH
-ARG MAINTENANCE=""
-ARG SIEVE
+ARG DOVECOT_VERSION
+ARG SIEVE_VERSION
 
 LABEL maintainer="g0dsCookie <g0dscookie@cookieprojects.de>" \
-      version="${MAJOR}.${MINOR}.${PATCH}${MAINTENANCE}" \
-      sieve_version="${SIEVE}" \
+      version="${DOVECOT_VERSION}" \
+      sieve_version="${SIEVE_VERSION}" \
       description="Dovecot is an open source IMAP and POP3 email server for Linux/UNIX-like systems, written with security primarily in mind."
 
 RUN set -eu \
+ && DOVECOT_VERSION="$(echo ${DOVECOT_VERSION} | sed 's/^v//')" \
+ && echo "${DOVECOT_VERSION}" >ver \
+ && IFS='.' read MAJOR MINOR PATCH <ver && rm -f ver \
  && cecho() { echo "\033[1;32m$1\033[0m"; } \
  && cecho "### PREPARE ENVIRONMENT ###" \
- && TMP="$(mktemp -d)" && PV="${MAJOR}.${MINOR}.${PATCH}${MAINTENANCE}" && S="${TMP}/dovecot-${PV}" \
+ && TMP="$(mktemp -d)" && PV="${DOVECOT_VERSION}" && S="${TMP}/dovecot-${PV}" \
  && for i in dovenull dovecot; do useradd -d /dev/null -s /sbin/nologin -M -r $i; done \
  && useradd -d /data -M -s /sbin/nologin vmail \
  && mkdir /data && chown vmail:vmail /data && chmod 0700 /data \
@@ -37,8 +38,8 @@ RUN set -eu \
  && curl -sSL --output "dovecot-${PV}.tar.gz" "https://dovecot.org/releases/${MAJOR}.${MINOR}/dovecot-${PV}.tar.gz" \
  && tar -xf "dovecot-${PV}.tar.gz" \
  && cecho "### DOWNLOADING SIEVE ###" \
- && curl -sSL -o "dovecot-${MAJOR}.${MINOR}-pigeonhole-${SIEVE}.tar.gz" "https://pigeonhole.dovecot.org/releases/${MAJOR}.${MINOR}/dovecot-${MAJOR}.${MINOR}-pigeonhole-${SIEVE}.tar.gz" \
- && tar -xzf "dovecot-${MAJOR}.${MINOR}-pigeonhole-${SIEVE}.tar.gz" \
+ && curl -sSL -o "dovecot-${MAJOR}.${MINOR}-pigeonhole-${SIEVE_VERSION}.tar.gz" "https://pigeonhole.dovecot.org/releases/${MAJOR}.${MINOR}/dovecot-${MAJOR}.${MINOR}-pigeonhole-${SIEVE_VERSION}.tar.gz" \
+ && tar -xzf "dovecot-${MAJOR}.${MINOR}-pigeonhole-${SIEVE_VERSION}.tar.gz" \
  && cecho "### BUILDING DOVECOT ###" \
  && cd "dovecot-${PV}" \
  && ./configure --disable-static \
@@ -58,7 +59,7 @@ RUN set -eu \
        /etc/dovecot/conf.d/10-logging.conf \
  && cd .. \
  && cecho "### BUILDING SIEVE ###" \
- && cd "dovecot-${MAJOR}.${MINOR}-pigeonhole-${SIEVE}" \
+ && cd "dovecot-${MAJOR}.${MINOR}-pigeonhole-${SIEVE_VERSION}" \
  && ./configure --disable-static --prefix=/usr --sysconfdir=/etc --with-moduledir=/usr/lib/dovecot \
  	--with-dovecot="../dovecot-${PV}" --enable-shared  --with-managesieve \
  && make -j$(nproc) \
