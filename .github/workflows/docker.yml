@@ -31,7 +31,7 @@ jobs:
             VERSION=${GITHUB_REF#refs/tags/}
           fi
           echo $VERSION >ver
-          IFS='_' read DOVECOT_VERSION SIEVE_VERSION
+          IFS='_' read DOVECOT_VERSION SIEVE_VERSION <ver
           rm -f ver
           echo "DOVECOT_VERSION=${DOVECOT_VERSION}" >>${GITHUB_ENV}
           echo "SIEVE_VERSION=${SIEVE_VERSION}" >>${GITHUB_ENV}
